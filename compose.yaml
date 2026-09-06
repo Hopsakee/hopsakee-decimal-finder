@@ -1,0 +1,16 @@
+# Dev/reference copy — matches hopsakee-server/config/pkw-web/compose.yaml's
+# shape. The copy that's actually deployed lives in
+# hopsakee-server/config/hopsakee-decimal-finder/compose.yaml and joins the
+# shared external `hup` network instead of exposing a port directly.
+#
+# Local use: `docker build -t node-static-base:20 -f base/node-static.Dockerfile base/`
+# once against a hopsakee-server checkout (see this repo's Dockerfile), then:
+#   docker compose up --build
+services:
+  hopsakee-decimal-finder:
+    build: .
+    image: hopsakee-decimal-finder
+    container_name: hopsakee-decimal-finder
+    restart: unless-stopped
+    ports:
+      - "8080:8080"

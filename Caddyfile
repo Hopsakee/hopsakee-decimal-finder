@@ -1,0 +1,32 @@
+:8080 {
+	root * /srv/app
+	encode gzip zstd
+
+	@wasm path *.wasm
+	header @wasm Content-Type "application/wasm"
+
+	# sw.js / manifest / index.html must never be cached by a returning
+	# browser: the PWA service worker (vite-plugin-pwa, registerType:
+	# autoUpdate) only picks up a new build when it re-fetches sw.js, and it
+	# only re-fetches sw.js if the browser doesn't serve a cached copy.
+	# Hashed JS/CSS in /assets are safe to cache hard — their filename changes
+	# whenever their content does.
+	#
+	# `path` matches the ORIGINAL request URI, not what try_files rewrites it
+	# to — "/" never becomes "/index.html" for this matcher's purposes even
+	# though try_files serves index.html's bytes for it. Verified by curl:
+	# without "/" in this list, GET / came back 200 with no Cache-Control
+	# header at all. Must list "/" explicitly alongside "/index.html".
+	@nocache path / /index.html /sw.js /manifest.webmanifest /registerSW.js
+	header @nocache Cache-Control "no-cache"
+
+	@immutable path /assets/*
+	header @immutable Cache-Control "public, max-age=31536000, immutable"
+
+	try_files {path} /index.html
+	file_server
+
+	handle_errors {
+		respond "{err.status_code} {err.status_text}" {err.status_code}
+	}
+}

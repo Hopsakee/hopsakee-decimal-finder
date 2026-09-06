@@ -1,0 +1,12 @@
+# Paste into hopsakee-server/config/caddy/conf/Caddyfile.
+#
+# PUBLIC app — no `import authelia_forward_auth` / `import logout`, matching
+# the pkw-web / datalab-knowledge.hopsakee.top precedent (MIGRATION-PLAN.md
+# locks this app as public; access control is "nothing sensitive here", not
+# auth). A gated app would additionally import both and add the
+# `handle_errors 403 503` block — see hopswiki.hopsakee.top in the same file
+# for that shape.
+
+hd.hopsakee.top {
+	reverse_proxy hopsakee-decimal-finder:8080
+}
