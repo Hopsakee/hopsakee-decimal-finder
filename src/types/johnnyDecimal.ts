@@ -1,6 +1,13 @@
 export interface Item {
-  id: string;
+  /** Full HD id like "d1.11.01". Absent for notes without an HD suffix. */
+  id?: string;
+  /** Local identity for items without an id. Kept in localStorage, stripped from export and GitHub sync. */
+  uid?: string;
   name: string;
+}
+
+export function itemKey(item: Item): string {
+  return item.id ?? item.uid ?? item.name;
 }
 
 export interface Category {

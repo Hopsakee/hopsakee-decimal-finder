@@ -3,7 +3,7 @@ import { Plus, X, Pencil, Check } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useInputKeyboard, parseItemPattern, buildItemId } from '@/hooks/useKeyboardHandlers';
-import type { Item } from '@/types/johnnyDecimal';
+import { itemKey, type Item } from '@/types/johnnyDecimal';
 
 function HighlightText({ text, terms }: { text: string; terms: string[] }) {
   if (terms.length === 0) return <>{text}</>;
@@ -43,12 +43,16 @@ export function ItemList({ items, categoryId, systemPrefix = '', matchedTerms = 
   const quickAddRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Sort items by ID numerically
+  // Sort items by ID numerically; items without an ID go last, alphabetically
   const sortedItems = [...items].sort((a, b) => {
-    const aNum = parseInt(a.id.split('.').pop() || '0');
-    const bNum = parseInt(b.id.split('.').pop() || '0');
-    return aNum - bNum;
+    if (a.id && b.id) return parseInt(a.id.split('.').pop() || '0') - parseInt(b.id.split('.').pop() || '0');
+    if (a.id) return -1;
+    if (b.id) return 1;
+    return a.name.localeCompare(b.name);
   });
+
+  // Next free item number: highest numbered id in this category + 1
+  const nextNumber = items.reduce((max, i) => (i.id ? Math.max(max, parseInt(i.id.split('.').pop() || '0') || 0) : max), 0) + 1;
 
   // Keyboard shortcut: 'n' or 'a' to focus quick add when container has focus
   useEffect(() => {
@@ -120,7 +124,7 @@ export function ItemList({ items, categoryId, systemPrefix = '', matchedTerms = 
   });
 
   const handleStartEdit = (item: Item) => {
-    setEditingId(item.id);
+    setEditingId(itemKey(item));
     setEditName(item.name);
   };
 
@@ -150,7 +154,7 @@ export function ItemList({ items, categoryId, systemPrefix = '', matchedTerms = 
           value={quickAddValue}
           onChange={e => setQuickAddValue(e.target.value)}
           onKeyDown={quickAddKeyDown}
-          placeholder={`Item name [${String(sortedItems.length + 1).padStart(2, '0')}]`}
+          placeholder={`Item name [${String(nextNumber).padStart(2, '0')}]`}
           className="flex-1 h-7 text-xs"
         />
         <Button
@@ -214,10 +218,10 @@ export function ItemList({ items, categoryId, systemPrefix = '', matchedTerms = 
         <div className="flex flex-wrap gap-1.5">
           {sortedItems.map(item => (
             <div
-              key={item.id}
+              key={itemKey(item)}
               className="group inline-flex items-center gap-1.5 bg-muted/50 border rounded px-2 py-1 text-xs"
             >
-              {editingId === item.id ? (
+              {editingId === itemKey(item) ? (
                 <>
                   <Input
                     value={editName}
@@ -227,12 +231,12 @@ export function ItemList({ items, categoryId, systemPrefix = '', matchedTerms = 
                     className="h-5 w-24 text-xs px-1"
                     autoFocus
                   />
-                  <span className="font-mono text-muted-foreground">({item.id})</span>
+                  {item.id && <span className="font-mono text-muted-foreground">({item.id})</span>}
                 </>
               ) : (
                 <>
                   <span className="font-medium"><HighlightText text={item.name} terms={matchedTerms} /></span>
-                  <span className="font-mono text-muted-foreground">({item.id})</span>
+                  {item.id && <span className="font-mono text-muted-foreground">({item.id})</span>}
                   <button
                     onClick={() => handleStartEdit(item)}
                     className="opacity-0 group-hover:opacity-100 hover:text-foreground text-muted-foreground transition-opacity"
@@ -240,7 +244,7 @@ export function ItemList({ items, categoryId, systemPrefix = '', matchedTerms = 
                     <Pencil className="h-3 w-3" />
                   </button>
                   <button
-                    onClick={() => onRemove(item.id)}
+                    onClick={() => onRemove(itemKey(item))}
                     className="opacity-0 group-hover:opacity-100 hover:text-destructive text-muted-foreground transition-opacity"
                   >
                     <X className="h-3 w-3" />

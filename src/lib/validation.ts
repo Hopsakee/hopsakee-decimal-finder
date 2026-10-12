@@ -1,10 +1,32 @@
 import { z } from 'zod';
 import type { JohnnyDecimalSystem } from '@/types/johnnyDecimal';
 
+// crypto.randomUUID only exists in secure contexts (https, localhost)
+const newUid = () =>
+  typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `uid-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
 export const ItemSchema = z.object({
-  id: z.string().min(1, "Item ID is required"),
+  id: z.string().min(1, "Item ID must not be empty; omit the key for notes without an HD id").optional(),
   name: z.string().min(1, "Item name is required")
-});
+}).transform(item => (item.id ? item : { ...item, uid: newUid() }));
+
+/** Gives every id-less item without a uid one. Used where data skips the schema (localStorage, GitHub pull). */
+export function withUids<T extends { areas?: { categories?: { items?: { id?: string; uid?: string }[] }[] }[] }>(systems: T[]): T[] {
+  return systems.map(system => ({
+    ...system,
+    areas: (system.areas ?? []).map(area => ({
+      ...area,
+      categories: (area.categories ?? []).map(cat => cat.items
+        ? { ...cat, items: cat.items.map(item => (item.id || item.uid ? item : { ...item, uid: newUid() })) }
+        : cat)
+    }))
+  })) as T[];
+}
+
+/** JSON.stringify replacer for export and sync: drops the `uid` of id-less items. The browser's own localStorage keeps it. */
+export const omitUid = (key: string, value: unknown) => (key === 'uid' ? undefined : value);
 
 export const CategorySchema = z.object({
   id: z.string().min(1, "Category ID is required"),
