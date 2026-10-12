@@ -9,7 +9,7 @@ Johnny.Decimal is a system to organize your digital (and physical) life. It prov
 - **Domains** (optional prefix): High-level life areas (e.g., `d1` for Work, `d2` for Personal)
 - **Areas** (10-19, 20-29, etc.): Broad categories within a domain
 - **Categories** (11, 12, 21, 22, etc.): Specific topics within an area
-- **Items** (d1.11.01, d1.11.02, etc.): Individual items within a category
+- **Items** (d1.11.01, d1.11.02, etc.): Individual items within a category. An item id is optional; notes without an HD id are listed by name only
 
 ## Features
 
@@ -47,46 +47,33 @@ Johnny.Decimal is a system to organize your digital (and physical) life. It prov
 - In area "90-99": `Contracten [92]` → creates category "92 Contracten"
 - In category "22": `Router [03]` → creates item "d1.22.03"
 
-## Installation (Without Lovable)
+## Run locally
 
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v18 or higher)
-- npm, yarn, or bun
-
-### Steps
+Prerequisites: [Node.js](https://nodejs.org/) 18 or higher (the Docker build uses Node 22).
 
 ```bash
-# Clone the repository
-git clone <YOUR_GIT_URL>
-
-# Navigate to the project directory
-cd <YOUR_PROJECT_NAME>
-
-# Install dependencies
-npm install
-
-# Start the development server
-npm run dev
+git clone https://github.com/Hopsakee/hopsakee-decimal-finder.git
+cd hopsakee-decimal-finder
+npm ci
+npm run dev          # http://localhost:5173
 ```
 
-The app will be available at `http://localhost:5173`
+Other scripts: `npm run build` (output in `dist/`), `npm run preview` (serve that build locally), `npm run lint`.
 
-### Building for Production
+## Docker and deployment
+
+The app is a static site served by Caddy inside a container on port 8080. The `Dockerfile` builds on a base image, `node-static-base:20`, that is not on any registry. Build it once from a `hopsakee-server` checkout:
 
 ```bash
-# Create a production build
-npm run build
-
-# Preview the production build locally
-npm run preview
+cd ~/hopsakee-server && docker build -t node-static-base:20 -f base/node-static.Dockerfile base/
+cd <this repo> && docker compose up --build    # http://localhost:8080
 ```
 
-The built files will be in the `dist` folder, ready to be deployed to any static hosting service (Netlify, Vercel, GitHub Pages, etc.).
+Production runs on the Hetzner server behind Caddy. `deploy.sh` is a reference copy of the script that runs there (`hopsakee-server/server_setup/deploy-hopsakee-decimal-finder.sh`); `CLAUDE.md` has the deploy contract. For local testing, `npm run dev` is the quicker route.
 
 ## Usage
 
-1. **Import a System**: Start by importing your Johnny.Decimal structure as JSON
+1. **Import a System**: Start by importing your Johnny.Decimal structure as JSON (the Help dialog describes the format; item `id` is optional)
 2. **Search**: Use the search bar (`/`) to quickly find anything
 3. **Edit**: Click on areas or categories to edit descriptions, tags, and items
 4. **Rename**: Click the pencil icon (✏️) on areas, categories, or items to rename
@@ -133,4 +120,4 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-Built with ❤️ using [Lovable](https://lovable.dev/)
+Originally built with [Lovable](https://lovable.dev/); now maintained here and hosted on Hetzner.

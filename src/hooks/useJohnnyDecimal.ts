@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import type { JohnnyDecimalSystem, Area, Category, Item } from '@/types/johnnyDecimal';
+import { itemKey, type JohnnyDecimalSystem, type Area, type Category, type Item } from '@/types/johnnyDecimal';
+import { omitUid, withUids } from '@/lib/validation';
 import { useGitHubConfig } from './useGitHubConfig';
 import { fetchFromGitHub, pushToGitHub, setSha, type SyncData } from '@/lib/githubSync';
 import type { SyncState } from '@/components/SyncStatus';
@@ -12,7 +13,7 @@ function loadFromStorage(): { systems: JohnnyDecimalSystem[]; activeIndex: numbe
     const systemsData = localStorage.getItem(STORAGE_KEY);
     const activeIndexData = localStorage.getItem(ACTIVE_INDEX_KEY);
     return {
-      systems: systemsData ? JSON.parse(systemsData) : [],
+      systems: systemsData ? withUids(JSON.parse(systemsData)) : [],
       activeIndex: activeIndexData ? parseInt(activeIndexData, 10) : 0
     };
   } catch {
@@ -68,7 +69,7 @@ export function useJohnnyDecimal() {
       const { data } = await fetchFromGitHub(config);
       
       if (data.systems && data.systems.length > 0) {
-        setSystems(data.systems as JohnnyDecimalSystem[]);
+        setSystems(withUids(data.systems) as JohnnyDecimalSystem[]);
         setActiveSystemIndex(data.activeSystemIndex || 0);
       }
       
@@ -235,7 +236,7 @@ export function useJohnnyDecimal() {
               return {
                 ...cat,
                 items: (cat.items || []).map(item =>
-                  item.id === itemId ? { ...item, ...updates } : item
+                  itemKey(item) === itemId ? { ...item, ...updates } : item
                 )
               };
             })
@@ -258,7 +259,7 @@ export function useJohnnyDecimal() {
               if (cat.id !== categoryId) return cat;
               return {
                 ...cat,
-                items: (cat.items || []).filter(item => item.id !== itemId)
+                items: (cat.items || []).filter(item => itemKey(item) !== itemId)
               };
             })
           };
@@ -269,7 +270,7 @@ export function useJohnnyDecimal() {
 
   const exportSystem = useCallback(() => {
     if (!activeSystem) return;
-    const blob = new Blob([JSON.stringify(activeSystem, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(activeSystem, omitUid, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     try {
       const a = document.createElement('a');

@@ -1,3 +1,5 @@
+import { omitUid } from '@/lib/validation';
+
 export interface GitHubConfig {
   owner: string;
   repo: string;
@@ -96,7 +98,7 @@ export async function pushToGitHub(
   const url = `${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/${path}`;
 
   // Encode content to base64 (using helper for Unicode support)
-  const jsonString = JSON.stringify(data, null, 2);
+  const jsonString = JSON.stringify(data, omitUid, 2);
   const content = utf8ToBase64(jsonString);
 
   const body: Record<string, string> = {

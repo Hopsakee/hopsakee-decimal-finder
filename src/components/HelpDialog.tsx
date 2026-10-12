@@ -61,7 +61,8 @@ export function HelpDialog({ onClearData }: HelpDialogProps) {
           "tags": ["employees"],
           "items": [
             { "id": "d1.11.01", "name": "Contracts" },
-            { "id": "d1.11.02", "name": "Policies" }
+            { "id": "d1.11.02", "name": "Policies" },
+            { "name": "Loose note without an id" }
           ]
         }
       ]
@@ -170,7 +171,7 @@ export function HelpDialog({ onClearData }: HelpDialogProps) {
                 <li><strong>categories[].description</strong>: Optional description</li>
                 <li><strong>categories[].tags</strong>: Optional array of tags</li>
                 <li><strong>categories[].items</strong>: Optional array of items</li>
-                <li><strong>items[].id</strong>: Full ID like "d1.11.01"</li>
+                <li><strong>items[].id</strong>: Optional full ID like "d1.11.01"; notes without an HD id omit it</li>
                 <li><strong>items[].name</strong>: Item name</li>
               </ul>
             </section>
