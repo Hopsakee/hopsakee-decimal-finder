@@ -4,7 +4,7 @@
 # shared by every static Vite/React app ported from Lovable. See
 # hopsakee-server/base/node-static.Dockerfile for why it's a separate image.
 
-FROM node:22-slim AS build
+FROM node:24-slim AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
