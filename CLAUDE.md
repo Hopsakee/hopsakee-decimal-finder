@@ -31,7 +31,7 @@ cd ~/hopsakee-server && docker build -t node-static-base:20 -f base/node-static.
 docker build -t hopsakee-decimal-finder .
 ```
 
-Two-stage Dockerfile: a throwaway `node:22-slim` stage runs `npm ci && npm run
+Two-stage Dockerfile: a throwaway `node:24-slim` stage runs `npm ci && npm run
 build`, then the static `dist/` is copied into `node-static-base:20` (Caddy,
 non-root UID 1001, healthcheck — all defined once in hopsakee-server/base/,
 not repeated per app).

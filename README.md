@@ -49,7 +49,7 @@ Johnny.Decimal is a system to organize your digital (and physical) life. It prov
 
 ## Run locally
 
-Prerequisites: [Node.js](https://nodejs.org/) 18 or higher (the Docker build uses Node 22).
+Prerequisites: [Node.js](https://nodejs.org/) 18 or higher (the Docker build uses Node 24).
 
 ```bash
 git clone https://github.com/Hopsakee/hopsakee-decimal-finder.git
