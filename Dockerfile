@@ -14,3 +14,7 @@ RUN npm run build
 FROM node-static-base:20
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY --from=build --chown=appuser:appuser /app/dist /srv/app
+
+# The base image already creates appuser (uid 1001) and runs as it; stating it
+# here keeps the final stage non-root explicitly (Trivy DS-0002).
+USER appuser
